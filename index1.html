@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur - Calcul de Ravitaillement</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛽</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --accent: #e74c3c;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --grey: #95a5a6;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 100%;
+      padding: 20px;
+      margin: 0 auto;
+    }
+    
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 0 0 20px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 25px;
+    }
+    
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    
+    .card-title {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+    
+    input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    button:hover {
+      background: #2980b9;
+    }
+    
+    button.secondary {
+      background: var(--secondary);
+    }
+    
+    button.secondary:hover {
+      background: #27ae60;
+    }
+    
+    button.danger {
+      background: var(--accent);
+    }
+    
+    button.danger:hover {
+      background: #c0392b;
+    }
+    
+    .result-container {
+      background: var(--light);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .result-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--dark);
+    }
+    
+    .result-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .history-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    
+    .history-date {
+      font-weight: bold;
+    }
+    
+    .history-details {
+      color: var(--grey);
+      font-size: 0.9rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--grey);
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+    
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--secondary);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--grey);
+      font-size: 0.9rem;
+      margin-top: 30px;
+    }
+    
+    @media (min-width: 768px) {
+      .container {
+        max-width: 500px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><i class="fas fa-gas-pump"></i> Gestionnaire de Ravitaillement</h1>
+    <p>Calculez facilement votre prochain ravitaillement</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-calculator"></i> Calcul du prochain ravitaillement</h2>
+      <form id="refuellingForm">
+        <div class="form-group">
+          <label for="refillDate">Date de ravitaillement :</label>
+          <input type="date" id="refillDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="fullQty">Capacité totale du réservoir (litres) :</label>
+          <input type="number" id="fullQty" placeholder="Ex: 100" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="minQty">Quantité minimale avant ravitaillement (litres) :</label>
+          <input type="number" id="minQty" placeholder="Ex: 10" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="runHours">Heures de fonctionnement par réservoir plein :</label>
+          <input type="number" id="runHours" placeholder="Ex: 48" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="dailyUsage">Consommation quotidienne (heures/jour) :</label>
+          <input type="number" id="dailyUsage" placeholder="Ex: 8" required>
+        </div>
+        
+        <button type="submit"><i class="fas fa-save"></i> Calculer & Enregistrer</button>
+      </form>
+    </div>
+
+    <div id="resultContainer" class="card" style="display: none;">
+      <h2 class="card-title"><i class="fas fa-calendar-check"></i> Résultat</h2>
+      <div class="result-container">
+        <p class="result-title">Prochain ravitaillement:</p>
+        <p id="resultValue" class="result-value"></p>
+      </div>
+      <p id="confirmation" style="text-align: center; margin-top: 15px; color: var(--secondary); font-weight: bold;"></p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-history"></i> Historique</h2>
+      <div id="history"></div>
+      
+      <div class="action-buttons">
+        <button onclick="showHistory()" class="secondary"><i class="fas fa-list"></i> Voir l'historique</button>
+        <button onclick="clearHistory()" class="danger"><i class="fas fa-trash"></i> Tout supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Application Gestionnaire de Ravitaillement © 2023</p>
+  </footer>
+
+  <script>
+    // Fonction pour afficher une notification
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${message}
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    // Fonction pour calculer le prochain ravitaillement
+    function calculateNextRefill() {
+      const refillDate = new Date(document.getElementById('refillDate').value);
+      const fullQty = parseFloat(document.getElementById('fullQty').value);
+      const minQty = parseFloat(document.getElementById('minQty').value);
+      const runHours = parseFloat(document.getElementById('runHours').value);
+      const dailyUsage = parseFloat(document.getElementById('dailyUsage').value);
+
+      const usableLitres = fullQty - minQty;
+      const consumptionPerHour = fullQty / runHours;
+      const availableHours = usableLitres / consumptionPerHour;
+      const daysToNextRefill = availableHours / dailyUsage;
+
+      const nextRefillDate = new Date(refillDate);
+      nextRefillDate.setDate(nextRefillDate.getDate() + daysToNextRefill);
+
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const resultText = nextRefillDate.toLocaleDateString('fr-FR', options);
+      
+      document.getElementById('resultValue').innerText = resultText;
+      document.getElementById('resultContainer').style.display = 'block';
+      
+      return resultText;
+    }
+
+    // Gestion de la soumission du formulaire
+    document.getElementById("refuellingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const nextRefill = calculateNextRefill();
+
+      const data = {
+        date: document.getElementById('refillDate').value,
+        full_qty: document.getElementById('fullQty').value,
+        min_qty: document.getElementById('minQty').value,
+        run_hours: document.getElementById('runHours').value,
+        daily_usage: document.getElementById('dailyUsage').value,
+        next_refill: nextRefill
+      };
+
+      let records = JSON.parse(localStorage.getItem("refuellingRecords")) || [];
+      records.push(data);
+      localStorage.setItem("refuellingRecords", JSON.stringify(records));
+
+      document.getElementById("confirmation").innerText = "✅ Données enregistrées localement !";
+      showNotification("Calcul enregistré avec succès !");
+      
+      // Réinitialiser le formulaire
+      setTimeout(() => {
+        document.getElementById("refuellingForm").reset();
+        document.getElementById('resultContainer').style.display = 'none';
+      }, 2000);
+    });
+
+    // Fonction pour afficher l'historique
+    function showHistory() {
+      const records = JSON.parse(localStorage.getItem("refuellingRecords")) || [];
+      const historyElement = document.getElementById("history");
+      
+      if (records.length === 0) {
+        historyElement.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Aucun enregistrement trouvé</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="history-list">';
+      records.forEach((r, i) => {
+        html += `
+          <div class="history-item">
+            <div>
+              <div class="history-date">${r.date}</div>
+              <div class="history-details">Prochain: ${r.next_refill}</div>
+            </div>
+            <div>
+              <button onclick="deleteRecord(${i})" style="width: auto; padding: 8px;"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      historyElement.innerHTML = html;
+      showNotification("Historique chargé");
+    }
+
+    // Fonction pour supprimer un enregistrement spécifique
+    function deleteRecord(index) {
+      if (confirm("Voulez-vous vraiment supprimer cet enregistrement ?")) {
+        let records = JSON.parse(localStorage.getItem("refuellingRecords")) || [];
+        records.splice(index, 1);
+        localStorage.setItem("refuellingRecords", JSON.stringify(records));
+        showHistory();
+        showNotification("Enregistrement supprimé");
+      }
+    }
+
+    // Fonction pour effacer tout l'historique
+    function clearHistory() {
+      if (confirm("Voulez-vous vraiment supprimer tout l'historique ?")) {
+        localStorage.removeItem("refuellingRecords");
+        document.getElementById("history").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Aucun enregistrement trouvé</p>
+          </div>
+        `;
+        showNotification("Historique supprimé");
+      }
+    }
+
+    // Initialiser la date du jour par défaut
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('refillDate').value = today;
+    });
+  </script>
+</body>
+</html>
